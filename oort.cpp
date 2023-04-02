@@ -45,9 +45,7 @@ Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &
     }
 
     return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0]
-         + Vec3f(1., 1., 1.) * specular_light_intensity * material.get_albedo()[1]
-         + reflect(dir, N) * material.get_albedo()[2]
-         + material.get_diffuse_color() * material.get_albedo()[3];
+         + Vec3f(1., 1., 1.) * specular_light_intensity * material.get_albedo()[1];
 }
 
 void render(const std::vector<Object*> &objects, const std::vector<Light> &lights) {
