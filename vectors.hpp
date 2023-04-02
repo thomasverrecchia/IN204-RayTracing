@@ -79,6 +79,15 @@ template<size_t DIM,typename T> T operator*(const vec<DIM,T>& lhs, const vec<DIM
     return ret;
 }
 
+template<size_t DIM,typename T> vec<DIM,T> length2(const vec<DIM,T>& lhs, const vec<DIM,T>& rhs) {
+    // Initialise le vecteur ret à zéro
+    float output = 0;
+    // Effectue la multiplication de deux vecteur lhs et rhs et fait la somme des composantes 
+    for (size_t i=DIM; i--; output+=lhs[i]*rhs[i]);
+    // Retourne le résultat
+    return output;
+}
+
 // Surcharge de l'opérateur d'addition pour les vecteurs de même dimension
 template<size_t DIM,typename T>vec<DIM,T> operator+(vec<DIM,T> lhs, const vec<DIM,T>& rhs) {
     // Ajoute chaque élément du vecteur rhs à celui du vecteur lhs correspondant

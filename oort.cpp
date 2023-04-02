@@ -25,6 +25,10 @@ bool scene_intersect(const Vec3f &orig, const Vec3f &dir, const std::vector<Obje
     return closest_dist < 1000;
 }
 
+Vec3f reflect(const Vec3f &I, const Vec3f &N) {
+    return I - N*2.f*(I*N);
+}
+
 Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &objects, const std::vector<Light> &lights) {
     Vec3f point, N;
     Material material;
@@ -33,13 +37,17 @@ Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &
         return Vec3f(0.2, 0.7, 0.8); // background color
     }
 
-    float diffuse_light_intensity = 0;
+    float diffuse_light_intensity = 0, specular_light_intensity = 0;
     for (size_t i=0; i<lights.size(); i++) {
         Vec3f light_dir      = (lights[i].position - point).normalize();
         diffuse_light_intensity  += lights[i].intensity * std::max(0.f, light_dir*N);
+        specular_light_intensity += powf(std::max(0.f, -reflect(-light_dir, N)*dir), material.get_specular_exponent())*lights[i].intensity;
     }
 
-    return material.get_diffuse_color() * diffuse_light_intensity;
+    return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0]
+         + Vec3f(1., 1., 1.) * specular_light_intensity * material.get_albedo()[1]
+         + reflect(dir, N) * material.get_albedo()[2]
+         + material.get_diffuse_color() * material.get_albedo()[3];
 }
 
 void render(const std::vector<Object*> &objects, const std::vector<Light> &lights) {
