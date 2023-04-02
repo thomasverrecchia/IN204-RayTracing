@@ -8,6 +8,7 @@
 #include "sphere.hpp"
 #include "object.hpp"
 #include "light.hpp"
+#include "parallelepiped.hpp"
 
 
 
@@ -86,7 +87,7 @@ int main() {
     objects.push_back(new Sphere(Vec3f(-3,    3,   -16), 2,      ivory));
     objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
     objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
-    objects.push_back(new Sphere(Vec3f( 7,    5,   -18), 4,      ivory));
+    objects.push_back(new Parallelepiped(Vec3f( 4,    2,   -18), Vec3f( 4,    4,   4),      ivory));
 
 
     std::vector<Light>  lights;
