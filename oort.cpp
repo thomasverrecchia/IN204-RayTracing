@@ -29,7 +29,8 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
     return I - N*2.f*(I*N);
 }
 
-Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &objects, const std::vector<Light> &lights) {
+Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &objects, const std::vector<Light> &lights,
+char* reflection_model){
     Vec3f point, N;
     Material material;
 
@@ -41,14 +42,25 @@ Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &
     for (size_t i=0; i<lights.size(); i++) {
         Vec3f light_dir      = (lights[i].position - point).normalize();
         diffuse_light_intensity  += lights[i].intensity * std::max(0.f, light_dir*N);
-        specular_light_intensity += powf(std::max(0.f, -reflect(-light_dir, N)*dir), material.get_specular_exponent())*lights[i].intensity;
+        if (reflection_model == "Phong") {
+            specular_light_intensity += powf(std::max(0.f, -reflect(-light_dir, N)*dir), material.get_specular_exponent())*lights[i].intensity;
+        }
+        if (reflection_model == "Blinn-Phong") {
+            Vec3f H = (light_dir - dir).normalize();
+            specular_light_intensity += powf(std::max(0.f, H*N), material.get_specular_exponent())*lights[i].intensity;
+        }           
     }
 
-    return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0]
-         + Vec3f(1., 1., 1.) * specular_light_intensity * material.get_albedo()[1];
+    if (reflection_model == "None") {
+        return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0];
+    }
+    else{
+        return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0]
+             + Vec3f(1., 1., 1.) * specular_light_intensity * material.get_albedo()[1];
+    }
 }
 
-void render(const std::vector<Object*> &objects, const std::vector<Light> &lights) {
+void render(const std::vector<Object*> &objects, const std::vector<Light> &lights,char* reflection_model = "None") {
     const int width    = 1024;
     const int height   = 768;
     const int fov      = M_PI/2.;
@@ -58,7 +70,7 @@ void render(const std::vector<Object*> &objects, const std::vector<Light> &light
             float x =  (2*(i + 0.5)/(float)width  - 1)*tan(fov/2.)*width/(float)height;
             float y = -(2*(j + 0.5)/(float)height - 1)*tan(fov/2.);
             Vec3f dir = Vec3f(x, y, -1).normalize();
-            framebuffer[i+j*width] = cast_ray(Vec3f(0,0,0), dir, objects, lights);
+            framebuffer[i+j*width] = cast_ray(Vec3f(0,0,0), dir, objects, lights,reflection_model);
         }
     }
 
@@ -91,8 +103,9 @@ int main() {
     lights.push_back(Light(Vec3f(-20, 20,  20), 1.5));
 
 
-
-    render(objects, lights);
+    // le modèle de réflection par défaut est "None"
+    // Vous pouvez choisir parmis "Phong" et "Blinn-Phong
+    render(objects, lights,"Blinn-Phong");
 
 
     return 0;
