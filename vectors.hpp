@@ -114,6 +114,17 @@ template<size_t DIM,typename T,typename U> vec<DIM,T> operator*(const vec<DIM,T>
     return ret;
 }
 
+// Surcharge de l'opérateur de division pour un vecteur et un scalaire
+template<size_t DIM,typename T,typename U> vec<DIM,T> operator/(const vec<DIM,T> &lhs, const U& rhs) {
+    // Initialise un nouveau vecteur ret
+    vec<DIM,T> ret;
+    // Divise chaque élément du vecteur lhs par le scalaire rhs et stocke le résultat dans le vecteur ret correspondant
+    for (size_t i=DIM; i--; ret[i]=lhs[i]/rhs);
+    // Retourne le vecteur résultant
+    return ret;
+}
+
+
 // Surcharge de l'opérateur de négation pour un vecteur
 template<size_t DIM,typename T> vec<DIM,T> operator-(const vec<DIM,T> &lhs) {
     // Retourne le vecteur lhs multiplié par -1

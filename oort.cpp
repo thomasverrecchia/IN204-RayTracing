@@ -44,7 +44,7 @@ char* reflection_model){
         Vec3f light_dir      = (lights[i].position - point).normalize();
         diffuse_light_intensity  += lights[i].intensity * std::max(0.f, light_dir*N);
         if (reflection_model == "Phong") {
-            specular_light_intensity += powf(std::max(0.f, -reflect(-light_dir, N)*dir), material.get_specular_exponent())*lights[i].intensity;
+            specular_light_intensity += powf(std::max(0.f, reflect(light_dir, N)*dir), material.get_specular_exponent())*lights[i].intensity;
         }
         if (reflection_model == "Blinn-Phong") {
             Vec3f H = (light_dir - dir).normalize();
@@ -95,18 +95,18 @@ int main() {
     std::vector<Object*> objects;
 
     objects.push_back(new Sphere(Vec3f(-3,    3,   -16), 2,      ivory));
-    objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
-    objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
-    objects.push_back(new Parallelepiped(Vec3f( 4,    2,   -18), Vec3f( 4,    4,   4),      ivory));
+    //objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
+    //objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
+    objects.push_back(new Parallelepiped(Vec3f( 0,    0,   -10), Vec3f( 2,    2,   2), ivory, M_PI/7, M_PI/4, 0));
 
 
     std::vector<Light>  lights;
-    lights.push_back(Light(Vec3f(-20, 20,  20), 1.5));
+    lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
 
 
     // le modèle de réflection par défaut est "None"
-    // Vous pouvez choisir parmis "Phong" et "Blinn-Phong
-    render(objects, lights,"Blinn-Phong");
+    // Vous pouvez choisir parmis "Phong" et "Blinn-Phong"
+    render(objects, lights,"Phong");
 
 
     return 0;
