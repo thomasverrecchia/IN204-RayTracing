@@ -1,14 +1,16 @@
 #include <limits>
 #include <cmath>
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <vector>
 #include <memory>
+#include <sstream>
+#include <algorithm>
 #include "vectors.hpp"
 #include "sphere.hpp"
 #include "object.hpp"
 #include "light.hpp"
-#include "parallelepiped.hpp"
 
 
 
@@ -86,6 +88,59 @@ void render(const std::vector<Object*> &objects, const std::vector<Light> &light
     ofs.close();
 }
 
+std::vector<std::string> split(const std::string& s, char delimiter) {
+    std::vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(s);
+    while (getline(tokenStream, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of(' ');
+    if (std::string::npos == first) {
+        return str;
+    }
+    size_t last = str.find_last_not_of(' ');
+    return str.substr(first, (last - first + 1));
+}
+
+void load_csv(const std::string& filename, std::vector<Object*>& objects, std::vector<Light>& lights) {
+    std::ifstream file(filename);
+    std::string line;
+
+    getline(file, line); // skip header
+
+    while (getline(file, line)) {
+        std::vector<std::string> tokens = split(line, ';');
+
+        std::string type = tokens[0];
+
+        std::string center_str = tokens[1];
+        center_str.erase(remove(center_str.begin(), center_str.end(), '('), center_str.end());
+        center_str.erase(remove(center_str.begin(), center_str.end(), ')'), center_str.end());
+        std::vector<std::string> center_tokens = split(center_str, ',');
+        Vec3f center(stof(center_tokens[0]), stof(center_tokens[1]), stof(center_tokens[2]));
+
+
+        Material material(Vec3f(0,0,0), Vec4f(0,0,0,0), 0, 0);
+        if (type == "Sphere") {
+            float radius = stof(tokens[2]);
+            std::string material_str = trim(tokens[3]);
+            if (material_str == "ivory") {
+                material = Material(Vec3f(0.4, 0.4, 0.3), Vec4f(0.6,  0.3, 0.1, 0.0), 50., 1.);
+            } else if (material_str == "red_rubber") {
+                material = Material(Vec3f(0.3, 0.1, 0.1), Vec4f(0.9,  0.1, 0.0, 0.0), 10., 1.);
+            }
+            objects.push_back(new Sphere(Vec3f(center[0], center[1], center[2]), radius, material));
+        } else if (type == "Lights") {
+            float intensity = stof(tokens[4]);
+            lights.push_back(Light(Vec3f(center[0], center[1], center[2]), intensity));
+        }
+    }
+}
 
 
 int main() {
@@ -98,12 +153,14 @@ int main() {
     //objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
     //objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
     objects.push_back(new Parallelepiped(Vec3f( 0,    0,   -10), Vec3f( 2,    2,   2), ivory, M_PI/7, M_PI/4, 0));
-
+    
+    
 
     std::vector<Light>  lights;
     lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
 
-
+    load_csv("config1.csv", objects, lights);
+    
     // le modèle de réflection par défaut est "None"
     // Vous pouvez choisir parmis "Phong" et "Blinn-Phong"
     render(objects, lights,"Phong");
