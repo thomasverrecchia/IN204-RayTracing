@@ -1,0 +1,4 @@
+type; center(objects,lights); radius(objects); material(objects); intensity(lights);
+Sphere; (-3,    3,   -16); 2; ivory; None;
+Sphere; (-5.0, -5.5, -12); 5; red_rubber; None;
+Lights; (-20, 20,  20); None; None; 1.5;
