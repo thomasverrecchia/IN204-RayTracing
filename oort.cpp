@@ -10,13 +10,14 @@
 #include <cstdlib>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include <omp.h>
+
 #include "vectors.hpp"
 #include "sphere.hpp"
 #include "object.hpp"
 #include "light.hpp"
 #include "parallelepiped.hpp"
 #include "plane.hpp"
-#include "omp.h"
 
 
 
@@ -39,7 +40,7 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
     return I - N*2.f*(I*N);
 }
 
-Vec3f refract(const Vec3f &I, const Vec3f &N, const float &refractive_index) { // Snell's law
+Vec3f refract(const Vec3f &I, const Vec3f &N, const float &refractive_index) { // implémentation de la loi de Snell
     float cosi = - std::max(-1.f, std::min(1.f, I*N));
     float etai = 1, etat = refractive_index;
     Vec3f n = N;
@@ -121,7 +122,7 @@ void render(const std::vector<Object*> &objects, const std::vector<Light> &light
         }
     }
 
-    std::ofstream ofs; // save the framebuffer to file
+    std::ofstream ofs;
     ofs.open("./out.ppm");
     ofs << "P6\n" << width << " " << height << "\n255\n";
     for (size_t i = 0; i < height*width; ++i) {
@@ -151,7 +152,7 @@ std::string trim(const std::string& str) {
     return str.substr(first, (last - first + 1));
 }
 
-void load_csv(const std::string& filename, std::vector<Object*>& objects, std::vector<Light>& lights) {
+void load_csv(const std::string& filename, std::vector<Object*>& objects, std::vector<Light>& lights, std::vector<std::string> mat_names, std::vector<Material> mat_values) {
     std::ifstream file(filename);
     std::string line;
 
@@ -173,18 +174,18 @@ void load_csv(const std::string& filename, std::vector<Object*>& objects, std::v
         if (type == "Sphere") {
             float radius = stof(tokens[2]);
             std::string material_str = trim(tokens[3]);
-            if (material_str == "ivory") {
-                material = Material(Vec3f(0.4, 0.4, 0.3), Vec4f(0.6,  0.3, 0.1, 0.0), 50., 1.);
-            } else if (material_str == "red_rubber") {
-                material = Material(Vec3f(0.3, 0.1, 0.1), Vec4f(0.9,  0.1, 0.0, 0.0), 10., 1.);
+            for(int i=0; i<mat_names.size(); i++){
+                if (material_str == mat_names[i]){
+                    material = mat_values[i];
+                }
             }
             objects.push_back(new Sphere(center, radius, material));
         }else if (type == "Parallelepiped"){
             std::string material_str = trim(tokens[3]);
-            if (material_str == "ivory") {
-                material = Material(Vec3f(0.4, 0.4, 0.3), Vec4f(0.6,  0.3, 0.1, 0.0), 50., 1.);
-            } else if (material_str == "red_rubber") {
-                material = Material(Vec3f(0.3, 0.1, 0.1), Vec4f(0.9,  0.1, 0.0, 0.0), 10., 1.);
+            for(int i=0; i<mat_names.size(); i++){
+                if (material_str == mat_names[i]){
+                    material = mat_values[i];
+                }
             }
             std::string size_str = tokens[5];
             size_str.erase(remove(size_str.begin(), size_str.end(), '('), size_str.end());
@@ -206,10 +207,15 @@ void load_csv(const std::string& filename, std::vector<Object*>& objects, std::v
 
 
 int main() {
-    Material      ivory(Vec3f(0.4, 0.4, 0.3), Vec4f(0.9,  0.5, 0.1, 0.0), 50., 1.);
-    Material red_rubber(Vec3f(0.3, 0.1, 0.1), Vec4f(1.4,  0.3, 0.0, 0.0), 10., 1.);
-    Material     mirror(Vec3f(1.0, 1.0, 1.0), Vec4f(0.0, 16.0, 0.8, 0.0), 1425., 1.);
-    Material      glass(Vec3f(0.6, 0.7, 0.8), Vec4f(0.0,  0.9, 0.1, 0.8), 125., 1.5);
+
+    std::vector<std::string> mat_names = {"ivory", "red_rubber", "mirror", "glass"}; 
+    std::vector<Material> mat_values = {Material(Vec3f(0.4, 0.4, 0.3), Vec4f(0.9,  0.5, 0.1, 0.0), 50., 1.),
+                                        Material(Vec3f(0.3, 0.1, 0.1), Vec4f(1.4,  0.3, 0.0, 0.0), 10., 1.),
+                                        Material(Vec3f(1.0, 1.0, 1.0), Vec4f(0.0, 16.0, 0.8, 0.0), 1425., 1.),
+                                        Material(Vec3f(0.6, 0.7, 0.8), Vec4f(0.0,  0.9, 0.1, 0.8), 125., 1.5)};
+
+
+
 
     std::vector<Object*> objects;
     std::vector<Light>  lights;
@@ -218,13 +224,9 @@ int main() {
 
     objects.push_back(  new Plane(  Vec3f(0, 1, 0), //Normale du plan
                                     -4,             //Distance entre l'origine (observateur) et la normale (au sens de plus petite distance entre un point du plan et l'origine)
-                                    ivory));        //Matériau du plan
+                                    mat_values[0]));//Matériau du plan
 
 
-
-    //Autres objets test en hard
-    objects.push_back(new Sphere(Vec3f(0,1,-15), 2, mirror));
-    objects.push_back(new Sphere(Vec3f(3,1,-10), 1, glass));
     
     
     #ifdef __linux__
@@ -250,7 +252,7 @@ int main() {
 
         std::cout << "Chemin d'accès au fichier : " << file_path << std::endl;
 
-        load_csv("config1.csv", objects, lights);
+        load_csv("config1.csv", objects, lights, mat_names, mat_values);
         render(objects, lights,"Phong");
     
     #elif _WIN32
@@ -271,7 +273,7 @@ int main() {
 
         if (GetOpenFileName(&ofn)) {
             std::cout << "Chemin d'accès au fichier : " << filename << std::endl;
-            load_csv(filename, objects, lights);
+            load_csv(filename, objects, lights, mat_names, mat_values);
             render(objects, lights,"Phong");
         }
 

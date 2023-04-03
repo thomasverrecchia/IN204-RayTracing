@@ -6,67 +6,6 @@
 #define EPSILON 0.00001
 
 
-// class Parallelepiped : public Object {
-// public:
-//     Parallelepiped(Vec3f position, Vec3f dimensions, Material material)
-//         : Object(material), position(position), dimensions(dimensions) {}
-
-//     bool ray_intersect(const Vec3f& orig, const Vec3f& dir, float& t0) const override {
-//         float tmin = (position.x - orig.x) / dir.x;
-//         float tmax = (position.x + dimensions.x - orig.x) / dir.x;
-
-//         if (tmin > tmax) std::swap(tmin, tmax);
-
-//         float tymin = (position.y - orig.y) / dir.y;
-//         float tymax = (position.y + dimensions.y - orig.y) / dir.y;
-
-//         if (tymin > tymax) std::swap(tymin, tymax);
-
-//         if ((tmin > tymax) || (tymin > tmax)) return false;
-
-//         if (tymin > tmin) tmin = tymin;
-
-//         if (tymax < tmax) tmax = tymax;
-
-//         float tzmin = (position.z - orig.z) / dir.z;
-//         float tzmax = (position.z + dimensions.z - orig.z) / dir.z;
-
-//         if (tzmin > tzmax) std::swap(tzmin, tzmax);
-
-//         if ((tmin > tzmax) || (tzmin > tmax)) return false;
-
-//         if (tzmin > tmin) tmin = tzmin;
-
-//         t0 = tmin;
-
-//         return true;
-//     }
-
-//     Vec3f get_position() const override { return position; }
-//     void set_position(const Vec3f& position) override { this->position = position; }
-
-//     Vec3f get_normal(const Vec3f& point) const override {
-//         if (point.x < position.x + 0.0001f)
-//             return Vec3f(-1, 0, 0);
-//         else if (point.x > position.x + dimensions.x - 0.0001f)
-//             return Vec3f(1, 0, 0);
-//         else if (point.y < position.y + 0.0001f)
-//             return Vec3f(0, -1, 0);
-//         else if (point.y > position.y + dimensions.y - 0.0001f)
-//             return Vec3f(0, 1, 0);
-//         else if (std::abs(point.z - position.z) < 0.0001f)
-//             return Vec3f(0, 0, -1);
-//         else if (std::abs(position.z + dimensions.z - point.z) < 0.0001f)
-//             return Vec3f(0, 0, 1);
-//         else
-//             return Vec3f(0, 0, 0);
-//     }
-
-// private:
-//     Vec3f position;
-//     Vec3f dimensions;
-// };
-
 
 
 class Parallelepiped : public Object {
@@ -152,7 +91,6 @@ public:
             normal = local_to_global(Vec3f(0, 0, 1));
         }
 
-        //std::cout << normal.normalize() << std::endl;
         return normal.normalize();
     }
 

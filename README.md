@@ -6,8 +6,8 @@ Vous pouvez également modifier directement le main() pour inclure à la main le
 
 ## Exécuter le programme avec un script de configuration
 
-Pour exécuter le programme avec un script de configuration, exécutez simplement l'éxécutable a.out. Vous devrez alors choisir le fichier config1.csv dans votre arborescence de fichier. Une fois sélectionné, le programme s'éxécutera et le résultat sera disponible sous la forme du fichier out.ppm. Si aucune fenêtre vers votre arborescence de fichier ne s'ouvre merci d'utiliser la méthode suivante.
+Pour exécuter le programme avec un script de configuration, exécutez simplement l'éxécutable oort. Vous devrez alors choisir le fichier config1.csv dans votre arborescence de fichier. Une fois sélectionné, le programme s'éxécutera et le résultat sera disponible sous la forme du fichier out.ppm. Si aucune fenêtre vers votre arborescence de fichier ne s'ouvre merci d'utiliser la méthode suivante.
 
 ## Exécuter le programme directement depuis le main 
 
-Pour exécuter le programme depuis le main, rendez vous dans la fonction main() du fichier oort.cpp et mettez en commentaire toutes les lignes entre #ifdef __linux__ et #endif. Libre à vous de rajouter à la main les objets et les sources de lumière en suivant le modèle présenté en commentaire du main().
+Pour exécuter le programme depuis le main, rendez vous dans la fonction main() du fichier oort.cpp et mettez en commentaire toutes les lignes entre #ifdef __linux__ et #endif. Libre à vous de rajouter à la main les objets et les sources de lumière en suivant le modèle présenté en commentaire du main(). Utiliser la commande make all pour compiler le programme puis exécutez le fichier oort.
