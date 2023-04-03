@@ -16,7 +16,7 @@
 #include "light.hpp"
 #include "parallelepiped.hpp"
 #include "plane.hpp"
-#include "cube.hpp"
+
 
 
 
@@ -191,6 +191,8 @@ int main() {
 
     std::vector<Object*> objects;
     std::vector<Light>  lights;
+
+    objects.push_back(new Plane(Vec3f(0, 1, 0), -4, ivory));
 
     objects.push_back(new Sphere(Vec3f(0,1,-5), 2, mirror));
     
