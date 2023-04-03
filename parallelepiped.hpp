@@ -73,37 +73,23 @@ public:
     Vec3f get_normal(const Vec3f& point) const override {
         // Calcul de la normale à partir du point d'intersection
         Vec3f local_point = global_to_local(point - m_position);
+        Vec3f normal;
         if (std::abs(local_point.x + m_half_size.x) < EPSILON) {
-            return local_to_global(Vec3f(-1, 0, 0));
+            normal = local_to_global(Vec3f(-1, 0, 0));
         } else if (std::abs(local_point.x - m_half_size.x) < EPSILON) {
-            return local_to_global(Vec3f(1, 0, 0));
+            normal = local_to_global(Vec3f(1, 0, 0));
         } else if (std::abs(local_point.y + m_half_size.y) < EPSILON) {
-            return local_to_global(Vec3f(0, -1, 0));
+            normal = local_to_global(Vec3f(0, -1, 0));
         } else if (std::abs(local_point.y - m_half_size.y) < EPSILON) {
-            return local_to_global(Vec3f(0, 1, 0));
+            normal = local_to_global(Vec3f(0, 1, 0));
         } else if (std::abs(local_point.z + m_half_size.z) < EPSILON) {
-            return local_to_global(Vec3f(0, 0, -1));
+            normal = local_to_global(Vec3f(0, 0, -1));
         } else {
-            return local_to_global(Vec3f(0, 0, 1));
+            normal = local_to_global(Vec3f(0, 0, 1));
         }
-    }
 
-    // Vec3f get_normal(const Vec3f& point) const override {
-    //     // Calcul de la normale à partir du point d'intersection
-    //     if (point.x < m_position.x + EPSILON) {
-    //         return Vec3f(-1, 0, 0);
-    //     } else if (point.x > m_position.x + m_size.x - EPSILON) {
-    //         return Vec3f(1, 0, 0);
-    //     } else if (point.y < m_position.y + EPSILON) {
-    //         return Vec3f(0, -1, 0);
-    //     } else if (point.y > m_position.y + m_size.y - EPSILON) {
-    //         return Vec3f(0, 1, 0);
-    //     } else if (point.z < m_position.z + EPSILON) {
-    //         return Vec3f(0, 0, -1);
-    //     } else {
-    //         return Vec3f(0, 0, 1);
-    //     }
-    // }
+        return normal.normalize();
+    }
 
 
 private:

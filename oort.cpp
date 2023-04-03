@@ -13,6 +13,7 @@
 #include "light.hpp"
 #include "parallelepiped.hpp"
 #include "plane.hpp"
+#include "cube.hpp"
 
 
 
@@ -43,9 +44,25 @@ char* reflection_model){
         return Vec3f(0.2, 0.7, 0.8); // background color
     }
 
+    //std::cout << point << std::endl;
+    //std::cout << N << std::endl;
+
     float diffuse_light_intensity = 0, specular_light_intensity = 0;
     for (size_t i=0; i<lights.size(); i++) {
         Vec3f light_dir      = (lights[i].position - point).normalize();
+
+        float light_distance = (lights[i].position - point).norm();
+        std::cout << light_distance << std::endl;
+
+        Vec3f shadow_orig = light_dir*N < 0 ? point - N*1e-3 : point + N*1e-3; // checking if the point lies in the shadow of the lights[i]
+
+        Vec3f shadow_pt, shadow_N;
+        Material tmpmaterial;
+        if (scene_intersect(shadow_orig, light_dir, objects, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt-shadow_orig).norm() < light_distance)
+            continue;
+        
+        
+        
         diffuse_light_intensity  += lights[i].intensity * std::max(0.f, light_dir*N);
         if (reflection_model == "Phong") {
             specular_light_intensity += powf(std::max(0.f, reflect(light_dir, N)*dir), material.get_specular_exponent())*lights[i].intensity;
@@ -172,16 +189,17 @@ int main() {
     //objects.push_back(new Sphere(Vec3f(-3,    3,   -16), 2,      ivory));
     //objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
     //objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
-    objects.push_back(new Parallelepiped(Vec3f( 0,    0,   -10), Vec3f( 2,    2,   2), ivory, M_PI/7, M_PI/4, 0));
-    objects.push_back(new CheckerboardPlane(Vec3f(0, 1, 0), -4, red_rubber, ivory, 2));
+    //objects.push_back(new Parallelepiped(Vec3f( 0,    0,   -10), Vec3f( 2,    2,   2), ivory, M_PI/7, M_PI/4, 0));
+    //objects.push_back(new CheckerboardPlane(Vec3f(0, 1, 0), -4, red_rubber, ivory, 2));
     //objects.push_back(new Plane(Vec3f(0, 1, 0), 10, red_rubber));
+    objects.push_back(new Cube(Vec3f( 0,    0,   -10), Vec3f( 0,    M_PI/4,   0), 2, ivory));
 
     
 
     std::vector<Light>  lights;
-    //lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
+    lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
 
-    load_csv("config1.csv", objects, lights);
+    //load_csv("config1.csv", objects, lights);
     
     // le modèle de réflection par défaut est "None"
     // Vous pouvez choisir parmis "Phong" et "Blinn-Phong"
