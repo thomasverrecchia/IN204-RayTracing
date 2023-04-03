@@ -1,4 +1,5 @@
-type; center(objects,lights); radius(objects); material(objects); intensity(lights);
-Sphere; (-3,    3,   -16); 2; ivory; None;
-Sphere; (-5.0, -5.5, -12); 5; red_rubber; None;
-Lights; (-20, 20,  20); None; None; 2.5;
+type; center(object,lights); radius(sphere); material(objects); intensity(lights); size (parallelepiped); angle_x (parallelepiped); angle_y (parallelepiped); angle_z (parallelepiped);
+Sphere; (-3,    3,   -16); 2; ivory; None; None; None; None; None;
+Sphere; (-5.0, -5.5, -12); 5; red_rubber; None; None; None; None; None;
+Lights; (-20, 20,  20); None; None; 1.5; None; None; None; None;
+Parallelepiped; (0, 0, -10); None; ivory; None; ( 2,    2,   2); 2; 1; 0;

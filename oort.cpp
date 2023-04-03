@@ -136,10 +136,28 @@ void load_csv(const std::string& filename, std::vector<Object*>& objects, std::v
             } else if (material_str == "red_rubber") {
                 material = Material(Vec3f(0.3, 0.1, 0.1), Vec4f(0.9,  0.1, 0.0, 0.0), 10., 1.);
             }
-            objects.push_back(new Sphere(Vec3f(center[0], center[1], center[2]), radius, material));
-        } else if (type == "Lights") {
+            objects.push_back(new Sphere(center, radius, material));
+        }else if (type == "Parallelepiped"){
+            std::string material_str = trim(tokens[3]);
+            if (material_str == "ivory") {
+                material = Material(Vec3f(0.4, 0.4, 0.3), Vec4f(0.6,  0.3, 0.1, 0.0), 50., 1.);
+            } else if (material_str == "red_rubber") {
+                material = Material(Vec3f(0.3, 0.1, 0.1), Vec4f(0.9,  0.1, 0.0, 0.0), 10., 1.);
+            }
+            std::string size_str = tokens[5];
+            size_str.erase(remove(size_str.begin(), size_str.end(), '('), size_str.end());
+            size_str.erase(remove(size_str.begin(), size_str.end(), ')'), size_str.end());
+            std::vector<std::string> size_tokens = split(size_str, ',');
+            Vec3f size(stof(size_tokens[0]), stof(size_tokens[1]), stof(size_tokens[2]));
+            float angle_x = stof(tokens[6]);
+            float angle_y = stof(tokens[7]);
+            float angle_z = stof(tokens[8]);
+            objects.push_back(new Parallelepiped(center, size, material, angle_x, angle_y, angle_z));
+
+
+        }else if (type == "Lights") {
             float intensity = stof(tokens[4]);
-            lights.push_back(Light(Vec3f(center[0], center[1], center[2]), intensity));
+            lights.push_back(Light(center, intensity));
         }
     }
 }
@@ -151,7 +169,7 @@ int main() {
 
     std::vector<Object*> objects;
 
-    objects.push_back(new Sphere(Vec3f(-3,    3,   -16), 2,      ivory));
+    //objects.push_back(new Sphere(Vec3f(-3,    3,   -16), 2,      ivory));
     //objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
     //objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
     objects.push_back(new Parallelepiped(Vec3f( 0,    0,   -10), Vec3f( 2,    2,   2), ivory, M_PI/7, M_PI/4, 0));
@@ -161,7 +179,7 @@ int main() {
     
 
     std::vector<Light>  lights;
-    //lights.push_back(Light(Vec3f(-20, 0, 20), 1.5));
+    //lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
 
     load_csv("config1.csv", objects, lights);
     
