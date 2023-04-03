@@ -192,6 +192,7 @@ int main() {
 
     objects.push_back(new Plane(Vec3f(0, 1, 0), -4, ivory));
     
+    
     #ifdef __linux__
 
         FILE *fp;
@@ -244,6 +245,29 @@ int main() {
         std::cout << "OS non supporté, veuillez saisir le fichier manuellement" << std::endl;
       
     #endif
+    
+    // Si le code prècédent ne marche pas sur votre système d'exploitation mettre en commentaire les #ifdef et 
+    // décommenter le code ci-dessous
+
+    
+    /*
+
+    // On rajoute des Objets
+    objects.push_back(new Sphere(Vec3f(-3, 0, -16), 2, ivory));
+    objects.push_back(new Sphere(Vec3f(-1.0, -1.5, -12), 2, red_rubber));
+    objects.push_back(new Sphere(Vec3f(1.5, -0.5, -18), 3, red_rubber));
+    objects.push_back(new Sphere(Vec3f(7, 5, -18), 4, ivory));
+
+    // On rajoute des lumières
+    lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
+
+    // On rajoute un plan
+    objects.push_back(new Plane(Vec3f(0, 1, 0), -4, ivory));
+
+    // On lance le rendu
+    render(objects, lights,"Phong");
+
+    */
 
 
 
