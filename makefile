@@ -1,7 +1,7 @@
 CXX = g++
-CXXFLAGS = -fopenmp
+CXXFLAGS = -fopenmp -I include
 
-SRCS = oort.cpp
+SRCS = src/oort.cpp
 OBJS = $(SRCS:.cpp=.o)
 EXEC = oort
 

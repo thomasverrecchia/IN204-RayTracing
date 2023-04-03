@@ -1,0 +1,9 @@
+type; center(object,lights); radius(sphere); material(objects); intensity(lights); size (parallelepiped); angle_x (parallelepiped); angle_y (parallelepiped); angle_z (parallelepiped);
+Sphere; (-3,    3,   -16); 2; ivory; None; None; None; None; None;
+Sphere; (-5.0, -5.5, -12); 5; red_rubber; None; None; None; None; None;
+Lights; (-20, 10,  20); None; None; 2.5; None; None; None; None;
+Lights; (10, 30,  50); None; None; 3.5; None; None; None; None;
+Sphere; (0,1,-15); 2; mirror; None; None; None; None; None;
+Sphere; (3,1,-10); 1; glass; None; None; None; None; None;
+Parallelepiped; (0, 2, -10); None; ivory; None; ( 2,    2,   2); 0; 0.765; 0.765;
+Parallelepiped; (4, -1, -8); None; grey_metal; None; ( 4,    2,   2); 0; 0.765; 0;
