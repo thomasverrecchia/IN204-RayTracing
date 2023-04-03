@@ -16,6 +16,7 @@
 #include "light.hpp"
 #include "parallelepiped.hpp"
 #include "plane.hpp"
+#include "omp.h"
 
 
 
@@ -38,18 +39,36 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
     return I - N*2.f*(I*N);
 }
 
+Vec3f refract(const Vec3f &I, const Vec3f &N, const float &refractive_index) { // Snell's law
+    float cosi = - std::max(-1.f, std::min(1.f, I*N));
+    float etai = 1, etat = refractive_index;
+    Vec3f n = N;
+    if (cosi < 0) { // si le rayon est à l'intérieur de l'objet, on échange les indices et on inverse la normale pour obtenir le résultat correct
+        cosi = -cosi;
+        std::swap(etai, etat); n = -N;
+    }
+    float eta = etai / etat;
+    float k = 1 - eta*eta*(1 - cosi*cosi);
+    return k < 0 ? Vec3f(0,0,0) : I*eta + n*(eta * cosi - sqrtf(k));
+}
+
+
 Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &objects, const std::vector<Light> &lights,
 char* reflection_model, size_t depth=0){
     Vec3f point, N;
     Material material;
 
     if (depth>4 || !scene_intersect(orig, dir, objects, point, N, material)) {
-        return Vec3f(0., 0., 0.); // background color
+        return Vec3f(0.3, 0.3, 0.3); // fond gris
     }
 
     Vec3f reflect_dir = reflect(dir, N).normalize();
     Vec3f reflect_orig = reflect_dir*N < 0 ? point - N*1e-3 : point + N*1e-3; // offset the original point to avoid occlusion by the object itself
     Vec3f reflect_color = cast_ray(reflect_orig, reflect_dir, objects, lights, reflection_model, depth + 1);
+
+    Vec3f refract_dir = refract(dir, N, material.get_refractive_index()).normalize();
+    Vec3f refract_orig = refract_dir*N < 0 ? point - N*1e-3 : point + N*1e-3;
+    Vec3f refract_color = cast_ray(refract_orig, refract_dir, objects, lights, reflection_model, depth + 1);
 
 
     float diffuse_light_intensity = 0, specular_light_intensity = 0;
@@ -58,12 +77,12 @@ char* reflection_model, size_t depth=0){
 
         float light_distance = (lights[i].position - point).norm();
 
-        // Vec3f shadow_orig = light_dir*N < 0 ? point + N*1e-3 : point + N*1e-3; // checking if the point lies in the shadow of the lights[i]
+        Vec3f shadow_orig = light_dir*N < 0 ? point + N*1e-3 : point + N*1e-3; // checking if the point lies in the shadow of the lights[i]
 
-        // Vec3f shadow_pt, shadow_N;
-        // Material tmpmaterial;
-        // if (scene_intersect(shadow_orig, light_dir, objects, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt-shadow_orig).norm() < light_distance)
-        //     continue;
+        Vec3f shadow_pt, shadow_N;
+        Material tmpmaterial;
+        if (scene_intersect(shadow_orig, light_dir, objects, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt-shadow_orig).norm() < light_distance)
+            continue;
         
         
         
@@ -81,8 +100,8 @@ char* reflection_model, size_t depth=0){
         return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0];
     }
     else{
-        return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0] + 
-            Vec3f(1., 1., 1.)*specular_light_intensity * material.get_albedo()[1] + reflect_color*material.get_albedo()[2];
+         return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0] 
+            + Vec3f(1., 1., 1.)*specular_light_intensity * material.get_albedo()[1] + reflect_color*material.get_albedo()[2] + refract_color*material.get_albedo()[3];
     }
 }
 
@@ -91,6 +110,8 @@ void render(const std::vector<Object*> &objects, const std::vector<Light> &light
     const int height   = 768;
     const int fov      = M_PI/2.;
     std::vector<Vec3f> framebuffer(width*height);
+
+    #pragma omp parallel for
     for (size_t j = 0; j<height; j++) {
         for (size_t i = 0; i<width; i++) {
             float x =  (2*(i + 0.5)/(float)width  - 1)*tan(fov/2.)*width/(float)height;
@@ -188,13 +209,22 @@ int main() {
     Material      ivory(Vec3f(0.4, 0.4, 0.3), Vec4f(0.9,  0.5, 0.1, 0.0), 50., 1.);
     Material red_rubber(Vec3f(0.3, 0.1, 0.1), Vec4f(1.4,  0.3, 0.0, 0.0), 10., 1.);
     Material     mirror(Vec3f(1.0, 1.0, 1.0), Vec4f(0.0, 16.0, 0.8, 0.0), 1425., 1.);
+    Material      glass(Vec3f(0.6, 0.7, 0.8), Vec4f(0.0,  0.9, 0.1, 0.8), 125., 1.5);
 
     std::vector<Object*> objects;
     std::vector<Light>  lights;
 
-    objects.push_back(new Plane(Vec3f(0, 1, 0), -4, ivory));
+    //DEFINITION DU PLAN EN HARD
 
-    objects.push_back(new Sphere(Vec3f(0,1,-5), 2, mirror));
+    objects.push_back(  new Plane(  Vec3f(0, 1, 0), //Normale du plan
+                                    -4,             //Distance entre l'origine (observateur) et la normale (au sens de plus petite distance entre un point du plan et l'origine)
+                                    ivory));        //Matériau du plan
+
+
+
+    //Autres objets test en hard
+    objects.push_back(new Sphere(Vec3f(0,1,-15), 2, mirror));
+    objects.push_back(new Sphere(Vec3f(3,1,-10), 1, glass));
     
     
     #ifdef __linux__
