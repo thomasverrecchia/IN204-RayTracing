@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -fopenmp
+CXXFLAGS = -fopenmp
 
 SRCS = oort.cpp
 OBJS = $(SRCS:.cpp=.o)

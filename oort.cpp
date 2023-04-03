@@ -71,6 +71,7 @@ char* reflection_model, size_t depth=0){
     Vec3f refract_orig = refract_dir*N < 0 ? point - N*1e-3 : point + N*1e-3;
     Vec3f refract_color = cast_ray(refract_orig, refract_dir, objects, lights, reflection_model, depth + 1);
 
+    //std::cout << point <<std::endl;
 
     float diffuse_light_intensity = 0, specular_light_intensity = 0;
     for (size_t i=0; i<lights.size(); i++) {
@@ -78,7 +79,7 @@ char* reflection_model, size_t depth=0){
 
         float light_distance = (lights[i].position - point).norm();
 
-        Vec3f shadow_orig = light_dir*N < 0 ? point + N*1e-3 : point + N*1e-3; // checking if the point lies in the shadow of the lights[i]
+        Vec3f shadow_orig = light_dir*N < 0 ? point - N*1e-3 : point + N*1e-3; // checking if the point lies in the shadow of the lights[i]
 
         Vec3f shadow_pt, shadow_N;
         Material tmpmaterial;
@@ -153,13 +154,15 @@ std::string trim(const std::string& str) {
 }
 
 void load_csv(const std::string& filename, std::vector<Object*>& objects, std::vector<Light>& lights, std::vector<std::string> mat_names, std::vector<Material> mat_values) {
-    std::ifstream file(filename);
+    std::ifstream file("/home/dinovico/IN204/Projet/config1.csv");
     std::string line;
 
     getline(file, line); // skip header
 
     while (getline(file, line)) {
         std::vector<std::string> tokens = split(line, ';');
+
+        if(line[0] == '#') continue;
 
         std::string type = tokens[0];
 
@@ -195,7 +198,7 @@ void load_csv(const std::string& filename, std::vector<Object*>& objects, std::v
             float angle_x = stof(tokens[6]);
             float angle_y = stof(tokens[7]);
             float angle_z = stof(tokens[8]);
-            objects.push_back(new Parallelepiped(center, size, material));
+            objects.push_back(new Parallelepiped(center, size, material, angle_x, angle_y, angle_z));
 
 
         }else if (type == "Lights") {
@@ -208,12 +211,13 @@ void load_csv(const std::string& filename, std::vector<Object*>& objects, std::v
 
 int main() {
 
-    std::vector<std::string> mat_names = {"ivory", "red_rubber", "mirror", "glass"}; 
+    std::vector<std::string> mat_names = {"ivory", "red_rubber", "mirror", "glass", "blue_metal", "grey_metal"}; 
     std::vector<Material> mat_values = {Material(Vec3f(0.4, 0.4, 0.3), Vec4f(0.9,  0.5, 0.1, 0.0), 50., 1.),
                                         Material(Vec3f(0.3, 0.1, 0.1), Vec4f(1.4,  0.3, 0.0, 0.0), 10., 1.),
                                         Material(Vec3f(1.0, 1.0, 1.0), Vec4f(0.0, 16.0, 0.8, 0.0), 1425., 1.),
-                                        Material(Vec3f(0.6, 0.7, 0.8), Vec4f(0.0,  0.9, 0.1, 0.8), 125., 1.5)};
-
+                                        Material(Vec3f(0.6, 0.7, 0.8), Vec4f(0.0,  0.9, 0.1, 0.8), 125., 1.5),
+                                        Material(Vec3f(0.05, 0.05, 0.25), Vec4f(0.7, 11.0, 0.6, 0.0), 1000., 1.),
+                                        Material(Vec3f(0.25, 0.25, 0.25), Vec4f(0.7, 11.0, 0.6, 0.0), 1000., 1.)};
 
 
 
@@ -222,17 +226,20 @@ int main() {
 
     //DEFINITION DU PLAN EN HARD
 
-    objects.push_back(  new Plane(  Vec3f(0, 1, 0), //Normale du plan
-                                    -4,             //Distance entre l'origine (observateur) et la normale (au sens de plus petite distance entre un point du plan et l'origine)
-                                    mat_values[0]));//Matériau du plan
-
-
     
+    objects.push_back(  new CheckerboardPlane(  Vec3f(0, 1, 0), //Normale du plan
+                                    -4,             //Distance entre l'origine (observateur) et la normale (au sens de plus petite distance entre un point du plan et l'origine)
+                                    mat_values[5],  //Matériau 1 du plan
+                                    mat_values[4],  //Matériau 2 du plan
+                                    2));            //Taille des cases
+    
+
+    //objects.push_back(new Parallelepiped(Vec3f(0, 2, -10), Vec3f(2.,2.,2.), mat_values[0]));
     
     #ifdef __linux__
 
         FILE *fp;
-        char file_path[1024];
+        char filename[1024];
 
         // Utiliser zenity pour demander à l'utilisateur de sélectionner un fichier
         char command[1024] = "zenity --file-selection --title=\"Sélectionner un fichier CSV\"";
@@ -244,15 +251,19 @@ int main() {
             return 1;
         }
 
-        fgets(file_path, 1024, fp);
+        fgets(filename, 1024, fp);
 
         pclose(fp);
 
 
 
-        std::cout << "Chemin d'accès au fichier : " << file_path << std::endl;
+        std::cout << filename << std::endl;
 
-        load_csv("config1.csv", objects, lights, mat_names, mat_values);
+        
+        std::string fullPath(filename);
+
+
+        load_csv(fullPath, objects, lights, mat_names, mat_values);
         render(objects, lights,"Phong");
     
     #elif _WIN32
