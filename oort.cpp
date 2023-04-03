@@ -39,30 +39,31 @@ Vec3f reflect(const Vec3f &I, const Vec3f &N) {
 }
 
 Vec3f cast_ray(const Vec3f &orig, const Vec3f &dir, const std::vector<Object*> &objects, const std::vector<Light> &lights,
-char* reflection_model){
+char* reflection_model, size_t depth=0){
     Vec3f point, N;
     Material material;
 
-    if (!scene_intersect(orig, dir, objects, point, N, material)) {
-        return Vec3f(0.2, 0.7, 0.8); // background color
+    if (depth>4 || !scene_intersect(orig, dir, objects, point, N, material)) {
+        return Vec3f(0., 0., 0.); // background color
     }
 
-    //std::cout << point << std::endl;
-    //std::cout << N << std::endl;
+    Vec3f reflect_dir = reflect(dir, N).normalize();
+    Vec3f reflect_orig = reflect_dir*N < 0 ? point - N*1e-3 : point + N*1e-3; // offset the original point to avoid occlusion by the object itself
+    Vec3f reflect_color = cast_ray(reflect_orig, reflect_dir, objects, lights, reflection_model, depth + 1);
+
 
     float diffuse_light_intensity = 0, specular_light_intensity = 0;
     for (size_t i=0; i<lights.size(); i++) {
         Vec3f light_dir      = (lights[i].position - point).normalize();
 
         float light_distance = (lights[i].position - point).norm();
-        std::cout << light_distance << std::endl;
 
-        Vec3f shadow_orig = light_dir*N < 0 ? point - N*1e-3 : point + N*1e-3; // checking if the point lies in the shadow of the lights[i]
+        // Vec3f shadow_orig = light_dir*N < 0 ? point + N*1e-3 : point + N*1e-3; // checking if the point lies in the shadow of the lights[i]
 
-        Vec3f shadow_pt, shadow_N;
-        Material tmpmaterial;
-        if (scene_intersect(shadow_orig, light_dir, objects, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt-shadow_orig).norm() < light_distance)
-            continue;
+        // Vec3f shadow_pt, shadow_N;
+        // Material tmpmaterial;
+        // if (scene_intersect(shadow_orig, light_dir, objects, shadow_pt, shadow_N, tmpmaterial) && (shadow_pt-shadow_orig).norm() < light_distance)
+        //     continue;
         
         
         
@@ -80,8 +81,8 @@ char* reflection_model){
         return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0];
     }
     else{
-        return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0]
-             + Vec3f(1., 1., 1.) * specular_light_intensity * material.get_albedo()[1];
+        return material.get_diffuse_color() * diffuse_light_intensity * material.get_albedo()[0] + 
+            Vec3f(1., 1., 1.)*specular_light_intensity * material.get_albedo()[1] + reflect_color*material.get_albedo()[2];
     }
 }
 
@@ -172,7 +173,7 @@ void load_csv(const std::string& filename, std::vector<Object*>& objects, std::v
             float angle_x = stof(tokens[6]);
             float angle_y = stof(tokens[7]);
             float angle_z = stof(tokens[8]);
-            objects.push_back(new Parallelepiped(center, size, material, angle_x, angle_y, angle_z));
+            objects.push_back(new Parallelepiped(center, size, material));
 
 
         }else if (type == "Lights") {
@@ -186,9 +187,12 @@ void load_csv(const std::string& filename, std::vector<Object*>& objects, std::v
 int main() {
     Material      ivory(Vec3f(0.4, 0.4, 0.3), Vec4f(0.9,  0.5, 0.1, 0.0), 50., 1.);
     Material red_rubber(Vec3f(0.3, 0.1, 0.1), Vec4f(1.4,  0.3, 0.0, 0.0), 10., 1.);
+    Material     mirror(Vec3f(1.0, 1.0, 1.0), Vec4f(0.0, 16.0, 0.8, 0.0), 1425., 1.);
 
     std::vector<Object*> objects;
     std::vector<Light>  lights;
+
+    objects.push_back(new Sphere(Vec3f(0,1,-5), 2, mirror));
     
     #ifdef __linux__
 
