@@ -11,6 +11,8 @@
 #include "sphere.hpp"
 #include "object.hpp"
 #include "light.hpp"
+#include "parallelepiped.hpp"
+#include "plane.hpp"
 
 
 
@@ -22,7 +24,7 @@ bool scene_intersect(const Vec3f &orig, const Vec3f &dir, const std::vector<Obje
             closest_dist = dist_i;
             hit = orig + dir*dist_i;
             N = object->get_normal(hit);
-            material = object->get_material();
+            material = object->get_material(hit);
         }
     }
     return closest_dist < 1000;
@@ -153,11 +155,13 @@ int main() {
     //objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
     //objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
     objects.push_back(new Parallelepiped(Vec3f( 0,    0,   -10), Vec3f( 2,    2,   2), ivory, M_PI/7, M_PI/4, 0));
-    
+    objects.push_back(new CheckerboardPlane(Vec3f(0, 1, 0), -4, red_rubber, ivory, 2));
+    //objects.push_back(new Plane(Vec3f(0, 1, 0), 10, red_rubber));
+
     
 
     std::vector<Light>  lights;
-    lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
+    //lights.push_back(Light(Vec3f(-20, 0, 20), 1.5));
 
     load_csv("config1.csv", objects, lights);
     

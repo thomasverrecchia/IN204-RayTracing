@@ -40,8 +40,8 @@ public:
     virtual Vec3f get_position() const = 0;
     virtual void set_position(const Vec3f& position) = 0;
 
-    Material get_material() const { return m_material; }
-    void set_material(const Material& material) { m_material = material; }
+    virtual Material get_material(const Vec3f& intersection_point) const { return m_material; }
+    virtual void set_material(const Material& material) { m_material = material; }
 
     // Méthode pour obtenir le vecteur normal au point d'intersection entre un rayon et l'objet
     virtual Vec3f get_normal(const Vec3f& intersection_point) const = 0;
