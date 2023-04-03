@@ -1,8 +1,8 @@
 # IN204-RayTracing
 
-Vous avez plusieurs possibilité pour exécuter ce programme. Vous pouvez configurez les sources de lumière et lesssssssssssss objets présents dans la scène à l'aide d'un script de configuration. Nous vous en fournissons 1 comme exemple et vous laissons libre d'en créer d'autre sur le même modèle. Cette fonctionnalité est disponible uniquement sous windows et Linux
+Vous avez plusieurs possibilité pour exécuter ce programme. Vous pouvez configurez les sources de lumière et les objets présents dans la scène à l'aide d'un script de configuration. Nous vous en fournissons 1 comme exemple et vous laissons libre d'en créer d'autre sur le même modèle. Cette fonctionnalité est disponible uniquement sous windows et Linux
 
-VOus pouvez également modifier directement le main() pour inclure à la main les différents objets et lumières. 
+Vous pouvez également modifier directement le main() pour inclure à la main les différents objets et lumières. 
 
 ## Exécuter le programme avec un script de configuration
 
