@@ -7,6 +7,9 @@
 #include <memory>
 #include <sstream>
 #include <algorithm>
+#include <cstdlib>
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include "vectors.hpp"
 #include "sphere.hpp"
 #include "object.hpp"
@@ -185,25 +188,61 @@ int main() {
     Material red_rubber(Vec3f(0.3, 0.1, 0.1), Vec4f(1.4,  0.3, 0.0, 0.0), 10., 1.);
 
     std::vector<Object*> objects;
-
-    //objects.push_back(new Sphere(Vec3f(-3,    3,   -16), 2,      ivory));
-    //objects.push_back(new Sphere(Vec3f(-5.0, -5.5, -12), 5, red_rubber));
-    //objects.push_back(new Sphere(Vec3f( 1.5, -0.5, -18), 3, red_rubber));
-    //objects.push_back(new Parallelepiped(Vec3f( 0,    0,   -10), Vec3f( 2,    2,   2), ivory, M_PI/7, M_PI/4, 0));
-    //objects.push_back(new CheckerboardPlane(Vec3f(0, 1, 0), -4, red_rubber, ivory, 2));
-    //objects.push_back(new Plane(Vec3f(0, 1, 0), 10, red_rubber));
-    objects.push_back(new Cube(Vec3f( 0,    0,   -10), Vec3f( 0,    M_PI/4,   0), 2, ivory));
-
-    
-
     std::vector<Light>  lights;
-    lights.push_back(Light(Vec3f(-20, 20, 20), 1.5));
-
-    //load_csv("config1.csv", objects, lights);
     
-    // le modèle de réflection par défaut est "None"
-    // Vous pouvez choisir parmis "Phong" et "Blinn-Phong"
-    render(objects, lights,"Phong");
+    #ifdef __linux__
+
+        FILE *fp;
+        char file_path[1024];
+
+        // Utiliser zenity pour demander à l'utilisateur de sélectionner un fichier
+        char command[1024] = "zenity --file-selection --title=\"Sélectionner un fichier CSV\"";
+
+        fp = popen(command, "r");
+
+        if (fp == NULL) {
+            std::cerr << "Erreur : impossible d'exécuter la commande" << std::endl;
+            return 1;
+        }
+
+        fgets(file_path, 1024, fp);
+
+        pclose(fp);
+
+
+
+        std::cout << "Chemin d'accès au fichier : " << file_path << std::endl;
+
+        load_csv("config1.csv", objects, lights);
+        render(objects, lights,"Phong");
+    
+    #elif _WIN32
+
+        // Utiliser la fonction de Windows pour demander à l'utilisateur de sélectionner un fichier
+        OPENFILENAME ofn;
+        char filename[1024] = "";
+
+        ZeroMemory(&ofn, sizeof(ofn));
+
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = NULL;
+        ofn.lpstrFilter = "CSV Files (*.csv)\0*.csv\0";
+        ofn.lpstrFile = filename;
+        ofn.nMaxFile = sizeof(filename);
+        ofn.lpstrTitle = "Sélectionner un fichier CSV";
+        ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
+
+        if (GetOpenFileName(&ofn)) {
+            std::cout << "Chemin d'accès au fichier : " << filename << std::endl;
+            load_csv(filename, objects, lights);
+            render(objects, lights,"Phong");
+        }
+
+    #elif __APPLE__
+        std::cout << "OS non supporté, veuillez saisir le fichier manuellement" << std::endl;
+      
+    #endif
+
 
 
     return 0;
